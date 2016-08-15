@@ -1,0 +1,121 @@
+DROP KEYSPACE IF EXISTS dev;
+CREATE KEYSPACE dev WITH REPLICATION = { 'class' : 'SimpleStrategy', 'replication_factor' : 1 };
+USE dev;
+
+DROP TABLE IF EXISTS account;
+CREATE COLUMNFAMILY account (
+account_id uuid,
+name text,
+balance bigint,
+address text,
+admin_user uuid,
+PRIMARY KEY(account_id));
+
+INSERT INTO account (account_id,name,balance,address,admin_user) VALUES (8e5199cc-3413-44fb-99a9-0ad49f6da664
+,'test account',1000000,'1 test street, test town, testopia',cc113940-3536-4e48-b23f-c9c4880527f6
+);
+DROP TABLE IF EXISTS account_user;
+CREATE COLUMNFAMILY account_user (
+account_id uuid,
+user_id uuid,
+PRIMARY KEY(user_id));
+INSERT INTO account_user (account_id,user_id) VALUES (8e5199cc-3413-44fb-99a9-0ad49f6da664,cc113940-3536-4e48-b23f-c9c4880527f6
+);
+DROP TABLE IF EXISTS user;
+CREATE COLUMNFAMILY user (
+user_id uuid,
+username text,
+passcode text,
+encryption_type int,
+PRIMARY KEY(username,passcode));
+
+INSERT INTO user (user_id, username, passcode, encryption_type) VALUES (cc113940-3536-4e48-b23f-c9c4880527f6
+, 'test@test.com', 'password', 0);
+DROP TABLE IF EXISTS node;
+CREATE COLUMNFAMILY node (
+node_id uuid,
+account_id uuid,
+PRIMARY KEY(node_id));
+DROP TABLE IF EXISTS online_node;
+CREATE COLUMNFAMILY online_node (
+	available Boolean,
+node_id uuid,
+rank int,
+address text,
+api_port int,
+db_port int,
+PRIMARY KEY(available));
+DROP TABLE IF EXISTS account_transactions;
+CREATE COLUMNFAMILY account_transactions (
+	time_window int,
+	account_id uuid,
+trans_id uuid,
+time timestamp,
+type int,
+amount int,
+PRIMARY KEY(time_window, account_id, trans_id));
+DROP TABLE IF EXISTS application;
+CREATE COLUMNFAMILY application (
+	app_id uuid,
+app_api_access_key uuid,
+	account_id uuid,
+app_settings map<text,text>,
+PRIMARY KEY(app_id, app_api_access_key));
+
+INSERT INTO application (app_id, app_api_access_key,account_id) VALUES (4532bd8a-7c8d-4e37-8e36-95548f29b7eb
+,681b8350-7f07-4953-a027-bba47e6a9d96
+,8e5199cc-3413-44fb-99a9-0ad49f6da664
+ );
+DROP TABLE IF EXISTS device;
+CREATE COLUMNFAMILY device (
+	device_id uuid,
+	app_id uuid,
+	account_id uuid,
+	sync_id uuid,
+last_seen timestamp,
+PRIMARY KEY(device_id));
+
+INSERT INTO device (device_id, app_id,account_id,last_seen,sync_id) VALUES (9e4ac6a5-aac3-4362-b530-0be53a9e6619
+,4532bd8a-7c8d-4e37-8e36-95548f29b7eb,8e5199cc-3413-44fb-99a9-0ad49f6da664, dateof(now()),1ddc1cb7-d231-4378-8dea-c04bfa5ed97c
+);
+
+DROP TABLE IF EXISTS change;
+CREATE COLUMNFAMILY change (
+app_id uuid, 
+rec_id uuid,
+path text,
+group text, 
+modified timeuuid,
+value text, 
+PRIMARY KEY((app_id,group),modified));
+INSERT INTO change (app_id,rec_id,path,group,modified,value) 
+VALUES (
+4532bd8a-7c8d-4e37-8e36-95548f29b7eb,
+ad33e38f-aebe-47ad-9c12-fd45f8fcb7c0,
+'ad33e38f-aebe-47ad-9c12-fd45f8fcb7c0/person/forename',
+'group1',
+now(),
+'Adrian'
+);
+
+INSERT INTO change (app_id,rec_id,path,group,modified,value) 
+VALUES (
+4532bd8a-7c8d-4e37-8e36-95548f29b7eb,
+ad33e38f-aebe-47ad-9c12-fd45f8fcb7c0,
+'ad33e38f-aebe-47ad-9c12-fd45f8fcb7c0/person/surname',
+'group1',
+now(),
+'Herridge'
+);
+
+INSERT INTO change (app_id,rec_id,path,group,modified,value) 
+VALUES (
+4532bd8a-7c8d-4e37-8e36-95548f29b7eb,
+ad33e38f-aebe-47ad-9c12-fd45f8fcb7c0,
+'ad33e38f-aebe-47ad-9c12-fd45f8fcb7c0/person/age',
+'group1',
+now(),
+'Too old!'
+);
+
+
