@@ -1,0 +1,5 @@
+sudo su
+yum -y install git
+cd /
+git clone https://sharkorm:TigerNias1@github.com/sharksync/provisioning.git
+cd /provisioning
