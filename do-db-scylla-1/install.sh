@@ -1,6 +1,4 @@
 #digital ocean scylla server 1 install script
-sudo su
-
 cd ~
 
 NODE_ID='do-db-scylla-1'
@@ -38,17 +36,17 @@ echo "10.138.32.190 db.sharksync">>/etc/hosts
 echo "10.138.32.190 db.sharksync">>/etc/cloud/templates/hosts.redhat.tmpl
 
 #setup access to relevant servers
-sudo systemctl start firewalld
-sudo systemctl enable firewalld
-sudo firewall-cmd --zone=public --add-service=ssh --permanent
-sudo firewall-cmd --reload
-sudo firewall-cmd --zone=public --add-rich-rule 'rule family="ipv4" source address=10.138.32.190 accept' --permanent
-sudo firewall-cmd --zone=public --add-rich-rule 'rule family="ipv4" source address=10.138.32.163 accept' --permanent
-sudo systemctl stop firewalld
-sudo systemctl start firewalld
+systemctl start firewalld
+systemctl enable firewalld
+firewall-cmd --zone=public --add-service=ssh --permanent
+firewall-cmd --reload
+firewall-cmd --zone=public --add-rich-rule 'rule family="ipv4" source address=10.138.32.190 accept' --permanent
+firewall-cmd --zone=public --add-rich-rule 'rule family="ipv4" source address=10.138.32.163 accept' --permanent
+systemctl stop firewalld
+systemctl start firewalld
 
 #configure scylla to automatically start
-sudo systemctl start scylla-server
-sudo systemctl enable scylla-server
-sudo systemctl start scylla-jmx
-sudo systemctl enable scylla-jmx
+systemctl start scylla-server
+systemctl enable scylla-server
+systemctl start scylla-jmx
+systemctl enable scylla-jmx
