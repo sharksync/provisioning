@@ -7,10 +7,8 @@
 
 . /etc/rc.d/init.d/functions
 
-USER="root"
-
-DAEMON="node"
-ROOT_DIR="/shark/sharktank/server"
+DAEMON="/root/.nvm/versions/node/v5.12.0/bin/node"
+ROOT_DIR="/shark/sharktank"
 
 SERVER="$ROOT_DIR/server.js"
 LOG_FILE="$ROOT_DIR/server.js.log"
