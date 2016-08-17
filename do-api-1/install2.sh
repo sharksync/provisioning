@@ -10,3 +10,7 @@ npm install moment
 npm install cassandra-driver
 npm install good-squeeze
 npm install good-console
+
+cp /provisioning/$NODE_ID/sharksync /etc/init.d/sharksync
+chmod +x /etc/init.d/sharksync
+chkconfig --add sharksync
