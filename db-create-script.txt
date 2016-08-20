@@ -87,35 +87,39 @@ path text,
 group text, 
 modified timeuuid,
 value text, 
+device_id uuid,
 PRIMARY KEY((app_id,group),modified));
-INSERT INTO change (app_id,rec_id,path,group,modified,value) 
+INSERT INTO change (app_id,rec_id,path,group,modified,value,device_id) 
 VALUES (
 4532bd8a-7c8d-4e37-8e36-95548f29b7eb,
 ad33e38f-aebe-47ad-9c12-fd45f8fcb7c0,
 'ad33e38f-aebe-47ad-9c12-fd45f8fcb7c0/person/forename',
 'group1',
 now(),
-'Adrian'
+'Adrian',
+9e4ac6a5-aac3-4362-b530-0be53a9e6619
 );
 
-INSERT INTO change (app_id,rec_id,path,group,modified,value) 
+INSERT INTO change (app_id,rec_id,path,group,modified,value,device_id) 
 VALUES (
 4532bd8a-7c8d-4e37-8e36-95548f29b7eb,
 ad33e38f-aebe-47ad-9c12-fd45f8fcb7c0,
 'ad33e38f-aebe-47ad-9c12-fd45f8fcb7c0/person/surname',
 'group1',
 now(),
-'Herridge'
+'Herridge',
+9e4ac6a5-aac3-4362-b530-0be53a9e6619
 );
 
-INSERT INTO change (app_id,rec_id,path,group,modified,value) 
+INSERT INTO change (app_id,rec_id,path,group,modified,value,device_id) 
 VALUES (
 4532bd8a-7c8d-4e37-8e36-95548f29b7eb,
 ad33e38f-aebe-47ad-9c12-fd45f8fcb7c0,
 'ad33e38f-aebe-47ad-9c12-fd45f8fcb7c0/person/age',
 'group1',
 now(),
-'Too old!'
+'Too old!',
+9e4ac6a5-aac3-4362-b530-0be53a9e6619
 );
 
 
