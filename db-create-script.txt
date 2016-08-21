@@ -130,7 +130,8 @@ CREATE COLUMNFAMILY sync (
 	app_id uuid,
 	group text,
 	tidemark timeuuid, 
-	operation int, 
+	operation int,
+	record_id uuid, 
 	path text,
 	PRIMARY KEY((app_id,group),tidemark)
 )  WITH CLUSTERING ORDER BY (tidemark ASC);
@@ -153,37 +154,34 @@ CREATE COLUMNFAMILY dud_sync (
 	PRIMARY KEY((app_id,group),tidemark)
 );
 
-INSERT INTO change (app_id,rec_id,path,group,modified,value,device_id) 
-VALUES (
-4532bd8a-7c8d-4e37-8e36-95548f29b7eb,
-ad33e38f-aebe-47ad-9c12-fd45f8fcb7c0,
-'ad33e38f-aebe-47ad-9c12-fd45f8fcb7c0/person/forename',
-'group1',
-now(),
-'Adrian',
-9e4ac6a5-aac3-4362-b530-0be53a9e6619
+INSERT INTO change (app_id,record_id,path,modified,group,value,device_id) VALUES (
+	4532bd8a-7c8d-4e37-8e36-95548f29b7eb,
+	ad33e38f-aebe-47ad-9c12-fd45f8fcb7c0,
+	'person/forename',
+	dateof(now()),
+	'group1',
+	'neil',
+	9e4ac6a5-aac3-4362-b530-0be53a9e6619
 );
 
-INSERT INTO change (app_id,rec_id,path,group,modified,value,device_id) 
-VALUES (
-4532bd8a-7c8d-4e37-8e36-95548f29b7eb,
-ad33e38f-aebe-47ad-9c12-fd45f8fcb7c0,
-'ad33e38f-aebe-47ad-9c12-fd45f8fcb7c0/person/surname',
-'group1',
-now(),
-'Herridge',
-9e4ac6a5-aac3-4362-b530-0be53a9e6619
+INSERT INTO change (app_id,record_id,path,modified,group,value,device_id) VALUES (
+	4532bd8a-7c8d-4e37-8e36-95548f29b7eb,
+	ad33e38f-aebe-47ad-9c12-fd45f8fcb7c0,
+	'person/surname',
+	dateof(now()),
+	'group1',
+	'bostrom',
+	9e4ac6a5-aac3-4362-b530-0be53a9e6619
 );
 
-INSERT INTO change (app_id,rec_id,path,group,modified,value,device_id) 
-VALUES (
-4532bd8a-7c8d-4e37-8e36-95548f29b7eb,
-ad33e38f-aebe-47ad-9c12-fd45f8fcb7c0,
-'ad33e38f-aebe-47ad-9c12-fd45f8fcb7c0/person/age',
-'group1',
-now(),
-'Too old!',
-9e4ac6a5-aac3-4362-b530-0be53a9e6619
+INSERT INTO change (app_id,record_id,path,modified,group,value,device_id) VALUES (
+	4532bd8a-7c8d-4e37-8e36-95548f29b7eb,
+	ad33e38f-aebe-47ad-9c12-fd45f8fcb7c0,
+	'person/age',
+	dateof(now()),
+	'group1',
+	'too young!',
+	9e4ac6a5-aac3-4362-b530-0be53a9e6619
 );
 
 INSERT INTO account (account_id,name,balance,address,admin_user) VALUES (8e5199cc-3413-44fb-99a9-0ad49f6da664
