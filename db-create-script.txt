@@ -119,8 +119,8 @@ CREATE COLUMNFAMILY change (
 	group text, 
 	value text, 
 	device_id uuid,
-	PRIMARY KEY((app_id,group),record_id,path,modified)
-) WITH CLUSTERING ORDER BY (record_id ASC,path ASC,modified DESC);
+	PRIMARY KEY((app_id,group),record_id,path,client_modified)
+) WITH CLUSTERING ORDER BY (record_id ASC,path ASC,client_modified DESC);
 
 -- the sync table, contains a system time ordered list of operation to be completed per <app_id,group>, 
 -- old data arriving will add a sync item, but the devices will just get the latest value for that again anyway
@@ -154,7 +154,7 @@ CREATE COLUMNFAMILY dud_sync (
 	PRIMARY KEY((app_id,group),tidemark)
 );
 
-INSERT INTO change (app_id,record_id,path,modified,group,value,device_id) VALUES (
+INSERT INTO change (app_id,record_id,path,client_modified,group,value,device_id) VALUES (
 	4532bd8a-7c8d-4e37-8e36-95548f29b7eb,
 	ad33e38f-aebe-47ad-9c12-fd45f8fcb7c0,
 	'person/forename',
@@ -164,7 +164,7 @@ INSERT INTO change (app_id,record_id,path,modified,group,value,device_id) VALUES
 	9e4ac6a5-aac3-4362-b530-0be53a9e6619
 );
 
-INSERT INTO change (app_id,record_id,path,modified,group,value,device_id) VALUES (
+INSERT INTO change (app_id,record_id,path,client_modified,group,value,device_id) VALUES (
 	4532bd8a-7c8d-4e37-8e36-95548f29b7eb,
 	ad33e38f-aebe-47ad-9c12-fd45f8fcb7c0,
 	'person/surname',
@@ -174,7 +174,7 @@ INSERT INTO change (app_id,record_id,path,modified,group,value,device_id) VALUES
 	9e4ac6a5-aac3-4362-b530-0be53a9e6619
 );
 
-INSERT INTO change (app_id,record_id,path,modified,group,value,device_id) VALUES (
+INSERT INTO change (app_id,record_id,path,client_modified,group,value,device_id) VALUES (
 	4532bd8a-7c8d-4e37-8e36-95548f29b7eb,
 	ad33e38f-aebe-47ad-9c12-fd45f8fcb7c0,
 	'person/age',
