@@ -4,91 +4,155 @@ USE dev;
 
 DROP TABLE IF EXISTS account;
 CREATE COLUMNFAMILY account (
-account_id uuid,
-name text,
-balance bigint,
-address text,
-admin_user uuid,
+	account_id uuid,
+	name text,
+	balance bigint,
+	gift_balance bigint,
+	address text,
+	admin_user uuid,
 PRIMARY KEY(account_id));
 
-INSERT INTO account (account_id,name,balance,address,admin_user) VALUES (8e5199cc-3413-44fb-99a9-0ad49f6da664
-,'test account',1000000,'1 test street, test town, testopia',cc113940-3536-4e48-b23f-c9c4880527f6
-);
 DROP TABLE IF EXISTS account_user;
 CREATE COLUMNFAMILY account_user (
-account_id uuid,
-user_id uuid,
+	account_id uuid,
+	user_id uuid,
 PRIMARY KEY(user_id));
-INSERT INTO account_user (account_id,user_id) VALUES (8e5199cc-3413-44fb-99a9-0ad49f6da664,cc113940-3536-4e48-b23f-c9c4880527f6
-);
+
 DROP TABLE IF EXISTS user;
 CREATE COLUMNFAMILY user (
-user_id uuid,
-username text,
-passcode text,
-encryption_type int,
+	user_id uuid,
+	username text,
+	passcode text,
+	encryption_type int,
 PRIMARY KEY(username,passcode));
 
-INSERT INTO user (user_id, username, passcode, encryption_type) VALUES (cc113940-3536-4e48-b23f-c9c4880527f6
-, 'test@test.com', 'password', 0);
 DROP TABLE IF EXISTS node;
 CREATE COLUMNFAMILY node (
-node_id uuid,
-account_id uuid,
-PRIMARY KEY(node_id));
-DROP TABLE IF EXISTS online_node;
-CREATE COLUMNFAMILY online_node (
+	node_id uuid,
 	available Boolean,
-node_id uuid,
-rank int,
-address text,
-api_port int,
-db_port int,
-PRIMARY KEY(available));
+	rank int,
+	address text,
+PRIMARY KEY(node_id));
+
+-- recording of stats for analytics and billing, to then be bulk processed
+DROP TABLE IF EXISTS raw_transactions;
+CREATE COLUMNFAMILY raw_transactions (
+	app_id uuid,
+	transaction_time timeuuid,
+	operation int,
+	value int,
+	PRIMARY KEY(app_id, transaction_time)
+);
+
+-- aggregated stats data, path contains the specific stats area, e.g. year, month, day, hour, min
+-- path will look like '2016/8/21/8/54', mith multiple entries for each type of aggregation.  e.g. the month one being just '2016/8'
+DROP TABLE IF EXISTS app_stats;
+CREATE COLUMNFAMILY app_stats (
+	account_id uuid,
+	app_id uuid,
+	path text,
+	op_auth int,
+	op_poll int,
+	op_write int,
+	op_read int,
+	op_delete int,
+	op_expired int,
+	PRIMARY KEY(account_id,app_id,path)
+);
+
+-- this is for an ultra lightweight 'POLL' call, 1 OP for low impact on system.  Updated with every write to the sync_log table
+DROP TABLE IF EXISTS group_modified_timestamp;
+CREATE COLUMNFAMILY group_modified_timestamp (
+	app_id uuid,
+	group text,
+	last_mod timestamp,
+	PRIMARY KEY (app_id,group)
+);
+
+-- account_transactions is to show credits to and summarised debits from the account allowances
 DROP TABLE IF EXISTS account_transactions;
 CREATE COLUMNFAMILY account_transactions (
-	time_window int,
 	account_id uuid,
-trans_id uuid,
-time timestamp,
-type int,
-amount int,
-PRIMARY KEY(time_window, account_id, trans_id));
+	trans_id uuid,
+	time timestamp,
+	type int,
+	amount int,
+	description text,
+	PRIMARY KEY(account_id, time)
+);
+
+-- group_activity is used to track unused or orphaned data within the system
+DROP TABLE IF EXISTS group_activity;
+CREATE COLUMNFAMILY group_activity (
+	app_id uuid,
+	group text,
+	last_activity timestamp,
+	PRIMARY KEY (app_id, group)
+);
+
 DROP TABLE IF EXISTS application;
 CREATE COLUMNFAMILY application (
 	app_id uuid,
-app_api_access_key uuid,
+	app_api_access_key uuid,
 	account_id uuid,
-app_settings map<text,text>,
-PRIMARY KEY(app_id, app_api_access_key));
+	app_settings map<text,text>,
+	PRIMARY KEY(app_id, app_api_access_key)
+);
 
-INSERT INTO application (app_id, app_api_access_key,account_id) VALUES (4532bd8a-7c8d-4e37-8e36-95548f29b7eb
-,681b8350-7f07-4953-a027-bba47e6a9d96
-,8e5199cc-3413-44fb-99a9-0ad49f6da664
- );
+
 DROP TABLE IF EXISTS device;
 CREATE COLUMNFAMILY device (
 	device_id uuid,
 	app_id uuid,
 	account_id uuid,
 	sync_id uuid,
-last_seen timestamp,
+	last_seen timestamp,
 PRIMARY KEY(device_id));
 
-INSERT INTO device (device_id, app_id,account_id,last_seen,sync_id) VALUES (9e4ac6a5-aac3-4362-b530-0be53a9e6619
-,4532bd8a-7c8d-4e37-8e36-95548f29b7eb,8e5199cc-3413-44fb-99a9-0ad49f6da664, dateof(now()),1ddc1cb7-d231-4378-8dea-c04bfa5ed97c
-);
-
+-- the change table is used to store values for a record path in a time ordered way, so a call to the path, will result in the newest value being returned
 DROP TABLE IF EXISTS change;
 CREATE COLUMNFAMILY change (
-app_id uuid, 
-rec_id uuid,
-path text,
-group text, 
-modified timeuuid,
-value text, 
-device_id uuid,
-PRIMARY KEY((app_id,group),modified));
+	app_id uuid,
+	record_id uuid, 
+	path text,
+	modified timestamp,
+	group text, 
+	value text, 
+	device_id uuid,
+	PRIMARY KEY((app_id,group),record_id,path,modified)
+) WITH CLUSTERING ORDER BY (record_id ASC,path ASC,modified DESC);
+
+-- the sync table, contains a system time ordered list of operation to be completed per <app_id,group>, 
+-- old data arriving will add a sync item, but the devices will just get the latest value for that again anyway
+
+DROP TABLE IF EXISTS sync;
+CREATE COLUMNFAMILY sync (
+	app_id uuid,
+	group text,
+	tidemark timeuuid, 
+	operation int, 
+	path text,
+	PRIMARY KEY((app_id,group),tidemark)
+)  WITH CLUSTERING ORDER BY (tidemark ASC);
+
+-- dud_change, this table contains records which we know are now redundant and can be cleaned up
+DROP TABLE IF EXISTS dud_change;
+CREATE COLUMNFAMILY dud_change (
+	app_id uuid,
+	path text,
+	modified timestamp,
+	PRIMARY KEY((app_id),path,modified)
+);
+
+-- dud_sync, this table contains records which we know are now redundant and can be cleaned up
+DROP TABLE IF EXISTS dud_sync;
+CREATE COLUMNFAMILY dud_sync (
+	app_id uuid,
+	group text,
+	tidemark timeuuid, 
+	PRIMARY KEY((app_id,group),tidemark)
+);
+
 INSERT INTO change (app_id,rec_id,path,group,modified,value,device_id) 
 VALUES (
 4532bd8a-7c8d-4e37-8e36-95548f29b7eb,
@@ -122,4 +186,20 @@ now(),
 9e4ac6a5-aac3-4362-b530-0be53a9e6619
 );
 
+INSERT INTO account (account_id,name,balance,address,admin_user) VALUES (8e5199cc-3413-44fb-99a9-0ad49f6da664
+,'test account',1000000,'1 test street, test town, testopia',cc113940-3536-4e48-b23f-c9c4880527f6
+);
+INSERT INTO account_user (account_id,user_id) VALUES (8e5199cc-3413-44fb-99a9-0ad49f6da664,cc113940-3536-4e48-b23f-c9c4880527f6
+);
 
+INSERT INTO user (user_id, username, passcode, encryption_type) VALUES (cc113940-3536-4e48-b23f-c9c4880527f6
+, 'test@test.com', 'password', 0);
+
+INSERT INTO application (app_id, app_api_access_key,account_id) VALUES (4532bd8a-7c8d-4e37-8e36-95548f29b7eb
+,681b8350-7f07-4953-a027-bba47e6a9d96
+,8e5199cc-3413-44fb-99a9-0ad49f6da664
+ );
+
+ INSERT INTO device (device_id, app_id,account_id,last_seen,sync_id) VALUES (9e4ac6a5-aac3-4362-b530-0be53a9e6619
+,4532bd8a-7c8d-4e37-8e36-95548f29b7eb,8e5199cc-3413-44fb-99a9-0ad49f6da664, dateof(now()),1ddc1cb7-d231-4378-8dea-c04bfa5ed97c
+);
