@@ -115,7 +115,7 @@ CREATE COLUMNFAMILY change (
 	app_id uuid,
 	record_id uuid, 
 	path text,
-	modified timestamp,
+	client_modified timestamp,
 	group text, 
 	value text, 
 	device_id uuid,
